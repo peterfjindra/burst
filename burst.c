@@ -24,6 +24,7 @@
 int main(int argc, char* argv[]) {
 
 	int infd;
+	int linecount = 0;
 
 	if(argc > 0){
 		infd = open(argv[1], O_RDONLY);
@@ -37,7 +38,9 @@ int main(int argc, char* argv[]) {
 	char buf[BUFSIZE];
 
 	ssize_t bytesread;
-	while(bytesread = read(infd, buf, BUFSIZE) > 0);
+	while((bytesread = read(infd, buf, BUFSIZE)) > 0){
+		printf("%d\n", bytesread);
+	}
 
 	if(bytesread == 0){
 		puts("done reading the file");
