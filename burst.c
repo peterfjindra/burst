@@ -23,6 +23,8 @@
 #define BUFSIZE 4096
 #define NUMLINES 500
 
+char* filename(int filenum, char* basename);
+
 int main(int argc, char* argv[]) {
 
 	int infd;
@@ -44,12 +46,12 @@ int main(int argc, char* argv[]) {
 
 	ssize_t bytesread;
 	while((bytesread = read(infd, buf, BUFSIZE)) > 0){
-		printf("%d\n", bytesread);
+		printf("%d\n", bytesread);//for debugging
 		strcat(contents, buf);
 	}
 
 	if(bytesread == 0){
-		puts("done reading the file");
+		puts("done reading the file"); //for debugging
 	}
 
 	else{
@@ -63,35 +65,8 @@ int main(int argc, char* argv[]) {
 	int lineswritten = 0;
 	int filenum = 1;
 	int passed = 0;
-	char *curfile = malloc(sizeof(char)*(strlen(argv[1]) + 1));
-	//char *ext = malloc(sizeof(char)*strlen(argv[1]));
-	//char *justname = malloc(sizeof(char)*strlen(argv[1]));
-	char *fullname = malloc(sizeof(char)*strlen(argv[1]));
-	strcpy(fullname, argv[1]);
-	//char curfile[strlen(argv[1]) + sizeof(filenum)];
-	//char ext[strlen(argv[1]) + 1];
-	//char justname[strlen(argv[1]) + 1];
-	const char delim[2] = ".";
-	const char sdelim[2] = "[";
-	char *token;
-	char *stoken;
-
-	token = strtok(fullname, delim);
-	//strcat(justname, token);
-	//puts(justname);
-	sprintf(curfile, "%s%d.", token, filenum);
-	while((token = strtok(NULL, delim)) != NULL){
-		strcat(curfile, token);
-	}
-	//char *filename = malloc(sizeof(char)*(strlen(argv[1]) + 1));
-	//stoken = strtok(curfile, sdelim);
-	//stoken = strtok(NULL, sdelim);
-	//puts(stoken);
-	//strcat(filename, stoken);
-	puts(curfile);
-	//free(filename);
-	free(curfile);
-	//free(justname);
+	char *newfilename = filename(filenum, argv[1]);
+	puts(newfilename); //for debugging
 /*	for(i = 0; i < strlen(argv[1]); i++){
 		if(argv[i] != "."){
 			if(passed){
@@ -108,7 +83,6 @@ int main(int argc, char* argv[]) {
 		}
 	}
 */
-	//puts(filename);
 	//passed = 0;
 	//i = 0;
 
@@ -118,3 +92,20 @@ int main(int argc, char* argv[]) {
 	return 0;
 }
 
+/*
+Function for generating a new filename with a number from the base filename.
+Takes in the number and the basename and creates the new name.
+*/
+char* filename(int filenum, char* basename){
+	char *curfile = malloc(sizeof(char)*(strlen(basename) + 1));
+        const char delim[2] = ".";
+        char *token;
+
+        token = strtok(basename, delim);
+        sprintf(curfile, "%s%d.", token, filenum);
+        while((token = strtok(NULL, delim)) != NULL){
+                strcat(curfile, token);
+        }
+
+	return curfile;
+}
