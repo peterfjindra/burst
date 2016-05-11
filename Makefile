@@ -15,3 +15,4 @@ clean :
 .PHONY: run
 run :
 	./burst moretext.txt
+
