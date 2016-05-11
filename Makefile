@@ -11,6 +11,7 @@ burst : burst.c burst.gz
 clean :
 	@rm -f burst
 	@rm -f burst.html burst.gz
+	@rm -f moretext1.txt moretext2.txt moretext3.txt sometext1.txt
 
 #run
 .PHONY: run

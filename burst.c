@@ -20,12 +20,47 @@
 #include <unistd.h>
 #include <string.h>
 #include <ctype.h>
+#include <getopt.h>
 
 #define BUFSIZE 4096
 
 char* filename(int filenum, char* basename, char* ext);
 
+extern char* optarg;
+extern int optind, opterr, optopt;
+
+struct option_ext {
+  const char* name;
+  int has_arg;
+  int* flag;
+  int val;
+  int val2;
+};
+
+struct option_ext longopts[] = {
+	{"help",    no_argument, NULL, 'h', 2},
+	{"version", no_argument, NULL, 'V', 4},
+};
+
 int main(int argc, char* argv[]) {
+	int flag = 0;
+	int oc;
+	int option_result;
+	int longindex;
+	while ((oc = getopt_long(argc, argv, "hV:", (struct option*) longopts, &longindex)) != -1) {
+		switch (oc) {
+    		case 'h':
+      			fprintf(stderr, "Be sure to specify your inut file and number of lines. e.g.:\n");
+			fprintf(stderr, "./burst myfile.txt 400\n");
+      			break;
+    		case 'V':
+      			fprintf(stderr, "You are using version 0.1 of burst.\n");
+      			break;
+		default:
+			break;
+		};
+		return 0;
+	}
 
 	int infd;
 	int linecount = 0;
@@ -40,7 +75,6 @@ int main(int argc, char* argv[]) {
 	else{
 		puts("please enter a file name as the first argument");
 	}
-	puts("1");
 	if(argc > 2){
  		for(int i = 0; i < strlen(argv[2]); i++){
 			if(!isdigit(argv[2][i])){
@@ -57,7 +91,6 @@ int main(int argc, char* argv[]) {
 	else{
 		maxlines = 500;
 	}
-	puts("3");
 	if(infd < 0){
 		perror("Input open error");
 		return 1;
