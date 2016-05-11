@@ -23,14 +23,13 @@
 #define BUFSIZE 4096
 #define NUMLINES 500
 
-char* filename(int filenum, char* basename);
+char* filename(int filenum, char* basename, char* ext);
 
 int main(int argc, char* argv[]) {
 
 	int infd;
 	int linecount = 0;
-	int outfd;
-	char *contents = malloc((sizeof(char)*(BUFSIZE + 1)));
+	char *contents = malloc(BUFSIZE);
 	char tempcontents[0];
 
 	if(argc > 0){
@@ -47,6 +46,7 @@ int main(int argc, char* argv[]) {
 	ssize_t bytesread;
 	while((bytesread = read(infd, buf, BUFSIZE)) > 0){
 		printf("%d\n", bytesread);//for debugging
+		contents = realloc(contents, sizeof(char)*strlen(contents) + BUFSIZE);
 		strcat(contents, buf);
 	}
 
@@ -57,38 +57,51 @@ int main(int argc, char* argv[]) {
 	else{
 		puts("ERROR");
 	}
-
 	//now we read through contents to count 500 newlines and write to a file
 	int index = 0;
 	int i = 0;
 	char tempchar;
+	char *basefilename = argv[1];
 	int lineswritten = 0;
+	int multiplier = 1; //number of times the content_perfile has been increased
 	int filenum = 1;
 	int passed = 0;
-	char *newfilename = filename(filenum, argv[1]);
-	puts(newfilename); //for debugging
-/*	for(i = 0; i < strlen(argv[1]); i++){
-		if(argv[i] != "."){
-			if(passed){
-				//strcat(ext, argv[i]);
-				ext[strlen(ext) - 1] = argv[i];
-			}
-			else{
-				//strcat(justname, argv[i]);
-				justname[strlen(justname) - 1] = argv[i];
-			}
-		}
-		else{
-			passed = 1;
-		}
-	}
-*/
+
+        const char delim[2] = ".";
+        char *token;
+        token = strtok(basefilename, delim);
+	char *baseonly = token;
+	token = strtok(NULL, delim);
+	char *ext = token;
+
+	char *newfilename = filename(filenum, baseonly, ext);
 	//passed = 0;
 	//i = 0;
+	int outfd = open(newfilename, O_WRONLY, O_CREAT);
+	char *content_perfile = malloc(BUFSIZE);
 
-	//while((tempchar = contents[index]) != EOF && tempchar != '\0'){
-	//	break;
-	//}
+	//the big while that loops through all of contents
+	while((tempchar = contents[index]) != EOF && tempchar != '\0'){
+		if(lineswritten == NUMLINES){
+			puts("done with 500 lines. next file");
+			//write to the file
+			memset(content_perfile, 0, sizeof(content_perfile));
+			lineswritten = 0;
+			++filenum;
+			basefilename = argv[1];
+			newfilename = filename(filenum, baseonly, ext);
+		}
+		if(tempchar == '\n'){
+			++lineswritten;
+		}
+		if(sizeof(content_perfile) >= BUFSIZE*multiplier){
+			content_perfile = realloc(content_perfile, sizeof(char)*(strlen(content_perfile) + BUFSIZE));
+			++multiplier;
+		}
+		content_perfile[strlen(content_perfile)] = tempchar;
+		content_perfile[strlen(content_perfile) + 1] = '\0';
+		++index;
+	}
 	return 0;
 }
 
@@ -96,16 +109,10 @@ int main(int argc, char* argv[]) {
 Function for generating a new filename with a number from the base filename.
 Takes in the number and the basename and creates the new name.
 */
-char* filename(int filenum, char* basename){
-	char *curfile = malloc(sizeof(char)*(strlen(basename) + 1));
-        const char delim[2] = ".";
-        char *token;
-
-        token = strtok(basename, delim);
-        sprintf(curfile, "%s%d.", token, filenum);
-        while((token = strtok(NULL, delim)) != NULL){
-                strcat(curfile, token);
-        }
-
+char* filename(int filenum, char* basename, char* ext){
+	char *curfile = malloc(sizeof(char)*(strlen(basename) + 1 + strlen(ext)));
+        sprintf(curfile, "%s%d.", basename, filenum);
+	strcat(curfile, ext);
+	puts(curfile);
 	return curfile;
 }
