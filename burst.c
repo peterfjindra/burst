@@ -77,19 +77,23 @@ int main(int argc, char* argv[]) {
 	char *newfilename = filename(filenum, baseonly, ext);
 	//passed = 0;
 	//i = 0;
-	int outfd = open(newfilename, O_WRONLY, O_CREAT);
+	int outfd = STDOUT_FILENO;
+	outfd = open(newfilename, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR);
 	char *content_perfile = malloc(BUFSIZE);
+
 
 	//the big while that loops through all of contents
 	while((tempchar = contents[index]) != EOF && tempchar != '\0'){
 		if(lineswritten == NUMLINES){
 			puts("done with 500 lines. next file");
 			//write to the file
+			write(outfd, content_perfile, strlen(content_perfile));
 			memset(content_perfile, 0, sizeof(content_perfile));
 			lineswritten = 0;
 			++filenum;
 			basefilename = argv[1];
 			newfilename = filename(filenum, baseonly, ext);
+			outfd = open(newfilename, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR);
 		}
 		if(tempchar == '\n'){
 			++lineswritten;
@@ -102,6 +106,8 @@ int main(int argc, char* argv[]) {
 		content_perfile[strlen(content_perfile) + 1] = '\0';
 		++index;
 	}
+	//write what's left to our last file
+	write(outfd, content_perfile, strlen(content_perfile));
 	return 0;
 }
 
