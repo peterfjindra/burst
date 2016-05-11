@@ -19,9 +19,9 @@
 #include <sys/select.h>
 #include <unistd.h>
 #include <string.h>
+#include <ctype.h>
 
 #define BUFSIZE 4096
-#define NUMLINES 500
 
 char* filename(int filenum, char* basename, char* ext);
 
@@ -31,11 +31,33 @@ int main(int argc, char* argv[]) {
 	int linecount = 0;
 	char *contents = malloc(BUFSIZE);
 	char tempcontents[0];
+	int maxlines = 0;
+	int validnum = 1;
 
-	if(argc > 0){
+	if(argc > 1){
 		infd = open(argv[1], O_RDONLY);
 	}
-
+	else{
+		puts("please enter a file name as the first argument");
+	}
+	puts("1");
+	if(argc > 2){
+ 		for(int i = 0; i < strlen(argv[2]); i++){
+			if(!isdigit(argv[2][i])){
+				validnum = 0;
+			}
+		}
+		if(validnum){
+			maxlines = atoi(argv[2]);
+		}
+		else{
+			maxlines = 500;
+		}
+	}
+	else{
+		maxlines = 500;
+	}
+	puts("3");
 	if(infd < 0){
 		perror("Input open error");
 		return 1;
@@ -84,16 +106,16 @@ int main(int argc, char* argv[]) {
 
 	//the big while that loops through all of contents
 	while((tempchar = contents[index]) != EOF && tempchar != '\0'){
-		if(lineswritten == NUMLINES){
+		if(lineswritten == maxlines){
 			puts("done with 500 lines. next file");
 			//write to the file
 			write(outfd, content_perfile, strlen(content_perfile));
 			memset(content_perfile, 0, sizeof(content_perfile));
 			lineswritten = 0;
 			++filenum;
-			basefilename = argv[1];
 			newfilename = filename(filenum, baseonly, ext);
 			outfd = open(newfilename, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR);
+			multiplier = 1;
 		}
 		if(tempchar == '\n'){
 			++lineswritten;
@@ -108,6 +130,8 @@ int main(int argc, char* argv[]) {
 	}
 	//write what's left to our last file
 	write(outfd, content_perfile, strlen(content_perfile));
+	//free(contents);
+	//free(content_perfile);
 	return 0;
 }
 
