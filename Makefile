@@ -3,26 +3,23 @@
 all : burst
 
 #link and compile
-burst : burst.c
+burst : burst.c burst.gz
 	@gcc -o burst burst.c
 
 #clean
 .PHONY: clean
 clean :
-	@rm burst
-	@rm -f burst.gz
+	@rm -f burst
+	@rm -f burst.html burst.gz
 
 #run
 .PHONY: run
 run :
 	./burst moretext.txt
 
-#create manpage
-burst : burst.md
+#create and compress manpage
+burst.gz : burst.md
 	@ronn burst.md
-
-#compress manpage
-burst.gz : burst
 	@gzip burst
 
 #view manpage
